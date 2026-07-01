@@ -2,7 +2,7 @@ require('dotenv').config(); // .env faylından tokenləri oxumaq üçün
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-const { TelegramBot } = require('node-telegram-bot-api');
+const TelegramBot = require('node-telegram-bot-api');
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
