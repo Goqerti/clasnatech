@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard | Clasna Tech</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Aktivlik axını üçün xüsusi animasiya */
+        @keyframes slideInDown {
+            from { opacity: 0; transform: translateY(-20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .feed-item-enter {
+            animation: slideInDown 0.4s ease-out forwards;
+        }
+        /* Scrollbar-ı gizlətmək üçün */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-slate-50 flex h-screen overflow-hidden font-sans text-gray-800">
+    <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-2xl z-20">
+        <div class="p-6 text-2xl font-black tracking-wider border-b border-slate-800 flex items-center gap-3">
+            <div class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center text-white">C</div>
+            Clasna
+        </div>
+        <nav class="flex-1 p-4 space-y-2 mt-4">
+            <a href="index.html" class="flex items-center gap-3 p-3 bg-indigo-600 shadow-lg shadow-indigo-600/30 rounded-xl font-medium transition-all">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                Əsas Panel
+            </a>
+            <a href="expenses.html" class="flex items-center gap-3 p-3 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl font-medium transition-all">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Xərclər
+            </a>
+            <a href="chat.html" class="flex items-center gap-3 p-3 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl font-medium transition-all">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+                Partnyor Chat
+            </a>
+            <a href="jobs.html" class="flex items-center gap-3 p-3 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl font-medium transition-all">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+    İşlər Freelancer 
+</a>
+  <a href="active-jobs.html" class="flex items-center gap-3 p-3 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl font-medium transition-all">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+    Hazırki İşlərim
+</a>
+        </nav>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-screen overflow-y-auto no-scrollbar relative">
+        <div class="absolute top-0 left-0 w-full h-64 bg-gradient-to-br from-indigo-800 via-indigo-600 to-purple-600 -z-10"></div>
+        
+        <div class="p-10 z-10">
+            <h2 class="text-3xl font-bold text-white mb-8 tracking-wide">Xoş Gəldiniz, İdarəçi 👋</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                <div class="bg-white/90 backdrop-blur-md p-6 rounded-2xl shadow-xl shadow-indigo-900/10 border border-white flex justify-between items-center transform hover:-translate-y-1 transition duration-300">
+                    <div>
+                        <p class="text-sm text-slate-500 font-bold uppercase tracking-wider mb-1">Aktiv Partnyorlar</p>
+                        <p class="text-4xl font-black text-slate-800" id="partnersCount">-</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-indigo-100 to-indigo-50 p-4 rounded-xl text-indigo-600 shadow-inner">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    </div>
+                </div>
+
+                <div class="bg-white/90 backdrop-blur-md p-6 rounded-2xl shadow-xl shadow-amber-900/10 border border-white flex justify-between items-center transform hover:-translate-y-1 transition duration-300">
+                    <div>
+                        <p class="text-sm text-slate-500 font-bold uppercase tracking-wider mb-1">Gözləyən İcraatlar</p>
+                        <p class="text-4xl font-black text-amber-500" id="ordersCount">-</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-amber-100 to-amber-50 p-4 rounded-xl text-amber-500 shadow-inner">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </div>
+                </div>
+
+                <div class="bg-white/90 backdrop-blur-md p-6 rounded-2xl shadow-xl shadow-rose-900/10 border border-white flex justify-between items-center transform hover:-translate-y-1 transition duration-300">
+                    <div>
+                        <p class="text-sm text-slate-500 font-bold uppercase tracking-wider mb-1">Ümumi Dövriyyə / Xərc</p>
+                        <p class="text-4xl font-black text-rose-500" id="expensesCount">-</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-rose-100 to-rose-50 p-4 rounded-xl text-rose-500 shadow-inner">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <div class="lg:col-span-2">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="relative flex h-4 w-4">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-4 w-4 bg-emerald-500"></span>
+                        </span>
+                        <h3 class="text-2xl font-bold text-slate-800">Platformada Hazırda...</h3>
+                    </div>
+                    
+                    <div id="activityFeed" class="space-y-4"></div>
+                </div>
+
+                <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl p-8 text-white shadow-2xl h-fit border border-slate-700">
+                    <h4 class="text-xl font-bold mb-4 border-b border-slate-700 pb-4">Sistem Statusu</h4>
+                    <ul class="space-y-4">
+                        <li class="flex justify-between items-center">
+                            <span class="text-slate-400">Server Yükü:</span>
+                            <span class="text-emerald-400 font-bold">24% (Normal)</span>
+                        </li>
+                        <li class="flex justify-between items-center">
+                            <span class="text-slate-400">Onlayn Freelancer:</span>
+                            <span class="font-bold">18 nəfər</span>
+                        </li>
+                        <li class="flex justify-between items-center">
+                            <span class="text-slate-400">Telegram Bot:</span>
+                            <span class="text-emerald-400 font-bold flex items-center gap-1"><div class="w-2 h-2 bg-emerald-500 rounded-full"></div> Aktiv</span>
+                        </li>
+                    </ul>
+                    <div class="mt-8 bg-white/10 p-4 rounded-xl backdrop-blur-sm border border-white/10">
+                        <p class="text-sm text-slate-300 italic">"Bu gün 12 yeni sifariş uğurla təhvil verildi. Komandanın performansı əladır!"</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>

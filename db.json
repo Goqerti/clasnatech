@@ -1,0 +1,231 @@
+{
+  "stats": {
+    "partners": 24,
+    "pendingOrders": 8,
+    "totalExpenses": 38316
+  },
+  "expensesList": [
+    {
+      "id": 1782916893837,
+      "description": "remote deskopt təsdiqi",
+      "amount": 340,
+      "date": "17.03.2026, 15:40:00"
+    },
+    {
+      "id": 1782917003704,
+      "description": "domain sistem sayt",
+      "amount": 780,
+      "date": "17.03.2026, 18:42:00"
+    },
+    {
+      "id": 1782917108307,
+      "description": "kwork reklam ",
+      "amount": 890,
+      "date": "20.07.2026, 21:37:00"
+    },
+    {
+      "id": 1782917346302,
+      "description": "hosting satış üçün ",
+      "amount": 900,
+      "date": "24.03.2026, 17:49:00"
+    },
+    {
+      "id": 1782917451031,
+      "description": "ceo tool api",
+      "amount": 900,
+      "date": "01.04.2026, 19:19:00"
+    },
+    {
+      "id": 1782917532425,
+      "description": "reklam global",
+      "amount": 880,
+      "date": "03.04.2026, 18:52:00"
+    },
+    {
+      "id": 1782917582608,
+      "description": "partnyor qoşulması 1+ api",
+      "amount": 960,
+      "date": "05.04.2026, 18:52:00"
+    },
+    {
+      "id": 1782917750137,
+      "description": "linux ssh slot server sifariş üçün",
+      "amount": 950,
+      "date": "07.04.2026, 16:55:00"
+    },
+    {
+      "id": 1782917853699,
+      "description": "kwork azerbaycan line",
+      "amount": 670,
+      "date": "14.04.2026, 18:57:00"
+    },
+    {
+      "id": 1782917921570,
+      "description": "reklam çəkiliş",
+      "amount": 220,
+      "date": "01.07.2026, 21:58:00"
+    },
+    {
+      "id": 1782917979340,
+      "description": "partnyor 2+",
+      "amount": 940,
+      "date": "16.04.2026, 23:41:00"
+    },
+    {
+      "id": 1782918021285,
+      "description": "partner 3+",
+      "amount": 965,
+      "date": "19.04.2026, 17:00:00"
+    },
+    {
+      "id": 1782918083991,
+      "description": "rejex design api",
+      "amount": 640,
+      "date": "21.04.2026, 20:01:00"
+    },
+    {
+      "id": 1782918160966,
+      "description": "cronjob api",
+      "amount": 935,
+      "date": "23.04.2026, 22:02:00"
+    },
+    {
+      "id": 1782918210110,
+      "description": "partner 4+",
+      "amount": 920,
+      "date": "27.04.2026, 17:03:00"
+    },
+    {
+      "id": 1782918285254,
+      "description": "ruby api ",
+      "amount": 920,
+      "date": "29.04.2026, 17:04:00"
+    },
+    {
+      "id": 1782918389776,
+      "description": "node parse api",
+      "amount": 980,
+      "date": "29.07.2026, 16:06:00"
+    },
+    {
+      "id": 1782918547272,
+      "description": "partner 5+",
+      "amount": 945,
+      "date": "03.05.2026, 14:46:00"
+    },
+    {
+      "id": 1782919939556,
+      "description": "mysql database 60gb ",
+      "amount": 940,
+      "date": "04.05.2026, 22:32:00"
+    },
+    {
+      "id": 1782920051190,
+      "description": "domain hosting never ",
+      "amount": 955,
+      "date": "06.05.2026, 12:33:00"
+    },
+    {
+      "id": 1782920076214,
+      "description": "partner 6+",
+      "amount": 900,
+      "date": "08.07.2026, 19:34:00"
+    },
+    {
+      "id": 1782920170236,
+      "description": "sayt rasxod",
+      "amount": 950,
+      "date": "09.05.2026, 16:36:00"
+    },
+    {
+      "id": 1782920218621,
+      "description": "sayta əlavə api ",
+      "amount": 955,
+      "date": "11.05.2026, 15:36:00"
+    },
+    {
+      "id": 1782920275091,
+      "description": "1 ci saytin elavesi",
+      "amount": 950,
+      "date": "12.05.2026, 13:37:00"
+    },
+    {
+      "id": 1782920322512,
+      "description": "checkout",
+      "amount": 1450,
+      "date": "14.07.2026, 15:38:00"
+    },
+    {
+      "id": 1782920448302,
+      "description": "blokchain",
+      "amount": 1520,
+      "date": "17.05.2026, 15:40:00"
+    },
+    {
+      "id": 1782920609621,
+      "description": "sistem update",
+      "amount": 910,
+      "date": "18.05.2026, 21:43:00"
+    },
+    {
+      "id": 1782921564245,
+      "description": "əlavə",
+      "amount": 1400,
+      "date": "21.05.2026, 14:59:00"
+    },
+    {
+      "id": 1782921622117,
+      "description": "kart ödəniş api",
+      "amount": 938,
+      "date": "26.05.2026, 14:00:00"
+    },
+    {
+      "id": 1782921686067,
+      "description": "sayt rasxod 3",
+      "amount": 1218,
+      "date": "01.06.2026, 20:01:00"
+    },
+    {
+      "id": 1782921777645,
+      "description": "əlavə",
+      "amount": 940,
+      "date": "04.06.2026, 19:01:00"
+    },
+    {
+      "id": 1782921820451,
+      "description": "partner",
+      "amount": 1799,
+      "date": "10.06.2026, 23:03:00"
+    },
+    {
+      "id": 1782922034285,
+      "description": "ssh",
+      "amount": 1272,
+      "date": "13.06.2026, 15:07:00"
+    },
+    {
+      "id": 1782922062644,
+      "description": "part",
+      "amount": 2000,
+      "date": "15.06.2026, 20:07:00"
+    },
+    {
+      "id": 1782922143994,
+      "description": "blok server",
+      "amount": 1600,
+      "date": "19.06.2026, 20:08:00"
+    },
+    {
+      "id": 1782922186998,
+      "description": "kwork 3 ay sonu",
+      "amount": 1900,
+      "date": "22.06.2026, 18:09:00"
+    },
+    {
+      "id": 1782922211678,
+      "description": "figma dil",
+      "amount": 1904,
+      "date": "29.06.2026, 20:10:00"
+    }
+  ]
+}
