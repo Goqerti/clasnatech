@@ -302,12 +302,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const socket = io();
         
         const partners = [
-            { id: 1, name: "Elvin Məmmədov" },
-            { id: 2, name: "Aysel Quliyeva" },
-            { id: 3, name: "Tural Həsənov" },
-            { id: 4, name: "Nərmin Rəhimova" },
-            { id: 5, name: "Orxan Əliyev" },
-            { id: 6, name: "Leyla Kərimova" }
+            { id: 1, name: "Crocodile Group" },
+            { id: 2, name: "İT Killer Group" },
+            { id: 3, name: "Tenchent" },
+            { id: 4, name: "WebtechRu" },
+            { id: 5, name: "Mosmo" },
+            { id: 6, name: "LinexRu" }
         ];
         
         let activePartner = null;
