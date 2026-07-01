@@ -22,7 +22,18 @@ const adminChatId = process.env.ADMIN_CHAT_ID;
 let bot;
 // Əgər token yazılıbsa botu işə salırıq, yoxsa sadəcə xəbərdarlıq edirik ki, server çökməsin
 if (token && token !== 'sizin_bot_tokeniniz_bura_yazilacaq') {
-    bot = new TelegramBot(token, { polling: true });
+    // polling-i false edin və webhook-dan istifadəyə hazırlaşın
+const bot = new TelegramBot(token, { polling: false });
+
+// Server başladıqdan sonra webhook-u aktivləşdirin
+const url = "https://clasnatech.onrender.com"; // Render-dəki URL-iniz
+bot.setWebHook(`${url}/bot${token}`);
+
+// Və express üçün xüsusi bir endpoint əlavə edin:
+app.post(`/bot${token}`, (req, res) => {
+    bot.processUpdate(req.body);
+    res.sendStatus(200);
+});
 } else {
     console.warn("⚠️ Telegram BOT_TOKEN tapılmadı və ya səhvdir. Bot xidməti aktiv deyil.");
 }
