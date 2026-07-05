@@ -1,4 +1,4 @@
-require('dotenv').config(); // .env faylından tokenləri oxumaq üçün
+require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -13,150 +13,123 @@ const io = new Server(server);
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public'))); // public qovluğunu vebə açır
+app.use(express.static(path.join(__dirname, 'public')));
 
-// TELEGRAM BOT AYARLARI (.env faylından oxunur)
+// TELEGRAM BOT AYARLARI
 const token = process.env.BOT_TOKEN;
 const adminChatId = process.env.ADMIN_CHAT_ID;
 
 let bot;
-// Əgər token yazılıbsa botu işə salırıq, yoxsa sadəcə xəbərdarlıq edirik ki, server çökməsin
 if (token && token !== 'sizin_bot_tokeniniz_bura_yazilacaq') {
-    // polling-i false edin və webhook-dan istifadəyə hazırlaşın
-const bot = new TelegramBot(token, { polling: false });
-
-// Server başladıqdan sonra webhook-u aktivləşdirin
-const url = "https://clasnatech.onrender.com"; // Render-dəki URL-iniz
-bot.setWebHook(`${url}/bot${token}`);
-
-// Və express üçün xüsusi bir endpoint əlavə edin:
-app.post(`/bot${token}`, (req, res) => {
-    bot.processUpdate(req.body);
-    res.sendStatus(200);
-});
+    bot = new TelegramBot(token, { polling: false });
+    // DİQQƏT: Render üçün polling:false etdik ki, xəta verməsin. 
+    // Əgər lokal kompüterdəsinizsə və botun cavab verməsini istəyirsinizsə, polling: true edə bilərsiniz.
 } else {
-    console.warn("⚠️ Telegram BOT_TOKEN tapılmadı və ya səhvdir. Bot xidməti aktiv deyil.");
+    console.warn("⚠️ Telegram BOT_TOKEN tapılmadı.");
 }
 
-// --- MƏLUMAT BAZASI (db.json) YOXLANILMASI VƏ YARADILMASI ---
+// --- MƏLUMAT BAZASI (db.json) ---
 const dbPath = path.join(__dirname, 'db.json');
 
-// Əgər db.json yoxdursa, ilkin məlumatlarla avtomatik yarat
 if (!fs.existsSync(dbPath)) {
-    console.log("⚠️ db.json faylı tapılmadı! Avtomatik olaraq yenisi yaradılır...");
     const defaultData = {
-        stats: {
-            partners: 24,
-            pendingOrders: 8,
-            totalExpenses: 0
-        },
-        expensesList: [] // Xərclər siyahısı
+        stats: { partners: 24, pendingOrders: 8, totalExpenses: 0 },
+        expensesList: [],
+        chatHistory: { "1": [], "2": [], "3": [], "4": [], "5": [], "6": [] }
     };
     fs.writeFileSync(dbPath, JSON.stringify(defaultData, null, 2));
-    console.log("✅ db.json uğurla yaradıldı!");
 }
 
-// Baza oxuma və yazma funksiyaları
 function readDB() {
-    return JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+    const db = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+    if (!db.chatHistory) {
+        db.chatHistory = { "1": [], "2": [], "3": [], "4": [], "5": [], "6": [] };
+        writeDB(db);
+    }
+    return db;
 }
 
 function writeDB(data) {
     fs.writeFileSync(dbPath, JSON.stringify(data, null, 2));
 }
-// -----------------------------------------------------------
 
-// API: Ümumi statistikaları gətir
-app.get('/api/stats', (req, res) => {
-    res.json(readDB().stats);
-});
+// API Endpoints
+app.get('/api/stats', (req, res) => res.json(readDB().stats));
+app.get('/api/expenses', (req, res) => res.json(readDB().expensesList || []));
+app.get('/api/chats', (req, res) => res.json(readDB().chatHistory)); // Yeni: Yazışmaları gətir
 
-// API: Xərclər siyahısını gətir
-app.get('/api/expenses', (req, res) => {
-    const db = readDB();
-    res.json(db.expensesList || []);
-});
-
-// API: Yeni xərc əlavə et (Formadan gələn məlumatlar)
+// Xərc əlavə et
 app.post('/api/expense', (req, res) => {
     const { amount, description, date } = req.body;
-    if (!amount || isNaN(amount) || !description) return res.status(400).send("Məlumat tam deyil");
-
     const db = readDB();
-    if (!db.expensesList) db.expensesList = []; // Köhnə baza üçün yoxlanış
+    if (!db.expensesList) db.expensesList = [];
 
-    // Tarixin formalaşdırılması: Əgər istifadəçi tarix seçibsə onu, seçməyibsə indiki vaxtı götürürük
     let finalDate = new Date().toLocaleString('az-AZ'); 
-    if (date) {
-        const parsedDate = new Date(date);
-        if (!isNaN(parsedDate)) {
-            finalDate = parsedDate.toLocaleString('az-AZ');
-        }
-    }
+    if (date && !isNaN(new Date(date))) finalDate = new Date(date).toLocaleString('az-AZ');
 
-    // Xərc obyekti
-    const newExpense = {
-        id: Date.now(),
-        description: description,
-        amount: parseFloat(amount),
-        date: finalDate // Təyin olunmuş tarix
-    };
-
+    const newExpense = { id: Date.now(), description, amount: parseFloat(amount), date: finalDate };
     db.expensesList.push(newExpense);
     db.stats.totalExpenses += parseFloat(amount);
     
-    writeDB(db); // Bazanı yeniləyirik
-    
+    writeDB(db);
     res.json({ success: true, totalExpenses: db.stats.totalExpenses, newExpense });
 });
 
-// API: Xərc silmək
+// Xərc sil
 app.delete('/api/expense/:id', (req, res) => {
-    const expenseId = parseInt(req.params.id);
     const db = readDB();
-    
-    if (!db.expensesList) return res.status(404).send("Xərc tapılmadı");
-
-    // Silinəcək xərci tapırıq ki, məbləğini ümumi xərcdən çıxaq
-    const expenseToDelete = db.expensesList.find(exp => exp.id === expenseId);
-    
+    const expenseToDelete = db.expensesList.find(exp => exp.id === parseInt(req.params.id));
     if (expenseToDelete) {
-        // Ümumi xərci azaldırıq (Amma 0-dan aşağı düşməsinə icazə vermirik)
-        db.stats.totalExpenses -= expenseToDelete.amount;
-        if (db.stats.totalExpenses < 0) db.stats.totalExpenses = 0;
-
-        // Siyahıdan həmin obyekti silirik
-        db.expensesList = db.expensesList.filter(exp => exp.id !== expenseId);
-        
-        writeDB(db); // Bazanı yeniləyirik
+        db.stats.totalExpenses = Math.max(0, db.stats.totalExpenses - expenseToDelete.amount);
+        db.expensesList = db.expensesList.filter(exp => exp.id !== parseInt(req.params.id));
+        writeDB(db);
         res.json({ success: true, totalExpenses: db.stats.totalExpenses });
     } else {
-        res.status(404).json({ success: false, message: "Belə bir xərc tapılmadı" });
+        res.status(404).json({ success: false });
     }
 });
 
-// TELEGRAM: Telegram-dan gələn cavab (Admin -> Vebsayt)
+// Qlobal dəyişən: Adminin kimə cavab verəcəyini bilmək üçün ən son yazan partnyoru yadda saxlayır
+let lastActivePartnerId = null;
+
+// WEBSOCKET: Canlı Yazışma İdarəetməsi
+io.on('connection', (socket) => {
+    socket.on('send-message', (data) => {
+        lastActivePartnerId = data.partnerId; // Ən sonuncu partnyoru qeyd et
+        
+        const db = readDB();
+        if(!db.chatHistory[data.partnerId]) db.chatHistory[data.partnerId] = [];
+        
+        const newMsg = { type: 'sent', text: data.text };
+        db.chatHistory[data.partnerId].push(newMsg);
+        writeDB(db);
+
+        // Mesajı saytdakı *digər bütün ziyarətçilərə* canlı göndər
+        socket.broadcast.emit('update-chat', { partnerId: data.partnerId, msg: newMsg });
+
+        // Telegram-a göndər
+        if (bot && adminChatId) {
+            bot.sendMessage(adminChatId, `👤 *Kiminlə:* ${data.partnerName}\n💬 *Mesaj:* ${data.text}`, { parse_mode: 'Markdown' })
+               .catch(err => console.error(err.message));
+        }
+    });
+});
+
+// TELEGRAM: Telegram-dan sayta cavab gəldikdə
 if (bot) {
     bot.on('message', (msg) => {
-        // Yalnız Admin-in yazdıqlarını sayta göndəririk
-        if (msg.chat.id.toString() === adminChatId && msg.text) {
-            io.emit('receive-message', { sender: 'admin', text: msg.text });
+        if (msg.chat.id.toString() === adminChatId && msg.text && lastActivePartnerId) {
+            const db = readDB();
+            const replyMsg = { type: 'received', text: msg.text };
+            
+            db.chatHistory[lastActivePartnerId].push(replyMsg);
+            writeDB(db);
+
+            // Saytdakı *hər kəsə* canlı olaraq Adminin cavabını göstər
+            io.emit('update-chat', { partnerId: lastActivePartnerId, msg: replyMsg });
         }
     });
 }
 
-// WEBSOCKET: Vebsaytdan serverə (və oradan Telegrama) gələn mesajlar
-io.on('connection', (socket) => {
-    socket.on('send-message', (data) => {
-        const messageText = `👤 *Kiminlə:* ${data.partnerName}\n💬 *Mesaj:* ${data.text}`;
-        
-        // Əgər bot və admin ID mövcuddursa, mesajı göndər
-        if (bot && adminChatId) {
-            bot.sendMessage(adminChatId, messageText, { parse_mode: 'Markdown' })
-               .catch(err => console.error("Telegram göndərmə xətası:", err.message));
-        }
-    });
-});
-
-const PORT = 3000;
-server.listen(PORT, () => console.log(`🚀 Server http://localhost:${PORT} adresində uğurla işə düşdü!`));
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => console.log(`🚀 Server aktivdir: http://localhost:${PORT}`));
