@@ -1,77 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // ======================================================
-    // === 1. BEZDİRİCİ VƏ TƏCİLİ BİLDİRİŞ POPUP-I ===
-    // ======================================================
-    const showUrgentNotice = () => {
-        const overlay = document.createElement('div');
-        overlay.className = 'fixed inset-0 bg-slate-900/85 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 transition-opacity duration-300';
-        overlay.id = 'urgentNoticeOverlay';
-
-        const modal = document.createElement('div');
-        modal.className = 'bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden relative transform scale-100 flex flex-col max-h-[90vh]';
-        
-        const closeBtn = document.createElement('button');
-        closeBtn.className = 'absolute top-3 right-3 text-gray-400 hover:text-red-600 transition bg-gray-100 hover:bg-red-50 p-1.5 rounded-full z-10';
-        closeBtn.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
-        
-        const content = document.createElement('div');
-        content.className = 'p-6 md:p-8 overflow-y-auto text-left';
-        content.innerHTML = `
-            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-5 animate-pulse">
-                <svg class="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                </svg>
-            </div>
-            
-            <div class="space-y-4">
-                <div class="bg-red-50 p-4 md:p-5 rounded-xl border border-red-100">
-                    <p class="text-[15px] text-slate-800 leading-relaxed">
-                        Dəyərli həmkarlar,<br>
-                        <span class="text-red-600 font-bold text-lg block mt-1 mb-1">Zəhmət olmasa, hər kəs öz API-lərini CRM sisteminə inteqrasiya edib keçid etsin.</span>
-                        Bu işin tamamlanması üçün son müddət <span class="font-bold bg-red-200 px-1.5 py-0.5 rounded text-red-800">1 gündür</span>.<br>
-                        <span class="text-sm text-slate-600 font-medium mt-2 block">Əməkdaşlığınıza görə təşəkkür edirəm.</span>
-                    </p>
-                </div>
-
-                <div class="bg-slate-50 p-4 md:p-5 rounded-xl border border-slate-200">
-                    <p class="text-[15px] text-slate-800 leading-relaxed">
-                        Уважаемые коллеги,<br>
-                        <span class="text-red-600 font-bold text-lg block mt-1 mb-1">Пожалуйста, загрузите и подключите ваши API к CRM-системе.</span>
-                        Крайний срок выполнения — <span class="font-bold bg-red-200 px-1.5 py-0.5 rounded text-red-800">1 день</span>.<br>
-                        <span class="text-sm text-slate-600 font-medium mt-2 block">Благодарю за сотрудничество!</span>
-                    </p>
-                </div>
-            </div>
-        `;
-
-        const progressContainer = document.createElement('div');
-        progressContainer.className = 'w-full h-1.5 bg-gray-200';
-        
-        const progressBar = document.createElement('div');
-        progressBar.className = 'h-full bg-red-600 transition-all ease-linear';
-        progressBar.style.width = '100%';
-        progressBar.style.transitionDuration = '20s';
-
-        progressContainer.appendChild(progressBar);
-        modal.appendChild(closeBtn);
-        modal.appendChild(content);
-        modal.appendChild(progressContainer);
-        overlay.appendChild(modal);
-        document.body.appendChild(overlay);
-
-        const closePopup = () => {
-            overlay.style.opacity = '0';
-            setTimeout(() => overlay.remove(), 300);
-        };
-
-        closeBtn.addEventListener('click', closePopup);
-        setTimeout(() => { progressBar.style.width = '0%'; }, 50);
-        setTimeout(closePopup, 20000);
-    };
-    showUrgentNotice();
-
-    // ======================================================
     // === 2. STATİSTİKALARIN YÜKLƏNMƏSİ ===
     // ======================================================
     const fetchStats = () => {
@@ -302,12 +231,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const socket = io();
         
         const partners = [
-            { id: 1, name: "Crocodile Group" },
-            { id: 2, name: "İT Killer Group" },
-            { id: 3, name: "Tenchent" },
-            { id: 4, name: "WebtechRu" },
-            { id: 5, name: "Mosmo" },
-            { id: 6, name: "LinexRu" }
+            { id: "1", name: "Crocodile Group" },
+            { id: "2", name: "İT Killer Group" },
+            { id: "3", name: "Tenchent" },
+            { id: "4", name: "WebtechRu" },
+            { id: "5", name: "Mosmo" },
+            { id: "6", name: "LinexRu" }
         ];
         
         let activePartner = null;
@@ -321,6 +250,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const chatInputArea = document.getElementById('chatInputArea');
         const chatInput = document.getElementById('chatInput');
         const sendMsgBtn = document.getElementById('sendMsgBtn');
+
+        // Serverdən chat tarixçəsini yüklə
+        function loadChatHistory() {
+            fetch('/api/chats')
+                .then(res => res.json())
+                .then(data => {
+                    partners.forEach(p => {
+                        chatHistories[p.id] = data[p.id] || [];
+                    });
+                    if (activePartner) {
+                        renderChat();
+                    }
+                })
+                .catch(err => console.error("Chat tarixçəsi yüklənərkən xəta:", err));
+        }
 
         function renderPartners() {
             if (!partnerListEl) return;
@@ -348,10 +292,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function renderChat() {
-            if (!chatBox) return;
+            if (!chatBox || !activePartner) return;
             chatBox.innerHTML = '';
             
-            const history = chatHistories[activePartner.id];
+            const history = chatHistories[activePartner.id] || [];
             
             if (history.length === 0) {
                 chatBox.innerHTML = `<div class="text-center text-gray-400 text-sm mt-10">Söhbətə başlayın...</div>`;
@@ -368,14 +312,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function sendMessage() {
-            if (!chatInput) return;
+            if (!chatInput || !activePartner) return;
             const text = chatInput.value.trim();
-            if (text === '' || !activePartner) return;
+            if (text === '') return;
 
+            // Lokal olaraq dərhal göstər
             chatHistories[activePartner.id].push({ type: 'sent', text });
             renderChat();
             
-            socket.emit('send-message', { partnerName: activePartner.name, text });
+            // Serverə göndər (partnerId mütləq lazımdır)
+            socket.emit('send-message', { 
+                partnerId: activePartner.id, 
+                partnerName: activePartner.name, 
+                text 
+            });
+            
             chatInput.value = '';
         }
 
@@ -386,13 +337,24 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        socket.on('receive-message', (data) => {
-            if (activePartner) {
-                chatHistories[activePartner.id].push({ type: 'received', text: data.text });
+        // Serverdən gələn mesajları dinlə (Telegram cavabı daxil)
+        socket.on('update-chat', (data) => {
+            if (!data.partnerId || !data.msg) return;
+            
+            // Tarixçəyə əlavə et
+            if (!chatHistories[data.partnerId]) {
+                chatHistories[data.partnerId] = [];
+            }
+            chatHistories[data.partnerId].push(data.msg);
+            
+            // Əgər həmin partner açıqdırsa, ekranı yenilə
+            if (activePartner && activePartner.id === data.partnerId) {
                 renderChat();
             }
         });
 
+        // Səhifə açılan kimi tarixçəni yüklə
+        loadChatHistory();
         renderPartners();
     }
 
