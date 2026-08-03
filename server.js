@@ -23,27 +23,37 @@ const io = new Server(server);
 app.use(cors());
 app.use(express.json());
 
-// ====================== STATİK FAYLLAR (Render üçün vacib) ======================
-// Həm public, həm də root qovluğundan servis et
+// ====================== STATİK FAYLLAR ======================
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(__dirname));
 
 // TELEGRAM BOT AYARLARI
 const token = process.env.BOT_TOKEN;
 const adminChatId = process.env.ADMIN_CHAT_ID;
+const RENDER_URL = process.env.RENDER_EXTERNAL_URL || process.env.RENDER_URL;
 
 let bot = null;
 
 if (token && token !== 'sizin_bot_tokeniniz_bura_yazilacaq' && typeof TelegramBot === 'function') {
     try {
-        const isLocal = process.env.NODE_ENV !== 'production';
-        bot = new TelegramBot(token, { polling: isLocal });
+        // Webhook rejimi
+        bot = new TelegramBot(token, { polling: false });
 
-        if (isLocal) {
-            console.log("✅ Telegram bot polling rejimində aktivdir");
+        // Webhook-u qur
+        if (RENDER_URL) {
+            const webhookUrl = `${RENDER_URL}/bot${token}`;
+            bot.setWebHook(webhookUrl)
+                .then(() => {
+                    console.log("✅ Webhook uğurla quruldu:", webhookUrl);
+                })
+                .catch(err => {
+                    console.error("❌ Webhook qurularkən xəta:", err.message);
+                });
         } else {
-            console.log("ℹ️ Production rejimindədir. Webhook istifadə edin.");
+            console.warn("⚠️ RENDER_EXTERNAL_URL tapılmadı. Webhook qurulmadı.");
         }
+
+        console.log("✅ Telegram bot Webhook rejimində aktivdir");
     } catch (err) {
         console.error("❌ Bot yaradıla bilmədi:", err.message);
         bot = null;
@@ -122,6 +132,14 @@ app.delete('/api/expense/:id', (req, res) => {
     }
 });
 
+// ====================== WEBHOOK ENDPOINT ======================
+app.post(`/bot${token}`, (req, res) => {
+    if (bot) {
+        bot.processUpdate(req.body);
+    }
+    res.sendStatus(200);
+});
+
 // ====================== WEBSOCKET + TELEGRAM ======================
 let lastActivePartnerId = null;
 
@@ -140,7 +158,6 @@ io.on('connection', (socket) => {
         db.chatHistory[data.partnerId].push(newMsg);
         writeDB(db);
 
-        // Digər istifadəçilərə göndər
         socket.broadcast.emit('update-chat', {
             partnerId: data.partnerId,
             msg: newMsg
@@ -197,9 +214,8 @@ if (bot) {
     });
 }
 
-// ====================== 404 və HTML fallback (Render üçün vacib) ======================
+// ====================== 404 və HTML fallback ======================
 app.get('*', (req, res) => {
-    // Əgər .html ilə bitirsə, birbaşa həmin faylı göndərməyə çalış
     if (req.path.endsWith('.html')) {
         const filePath = path.join(__dirname, req.path);
         if (fs.existsSync(filePath)) {
