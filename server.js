@@ -22,7 +22,11 @@ const io = new Server(server);
 
 app.use(cors());
 app.use(express.json());
+
+// ====================== STATİK FAYLLAR (Render üçün vacib) ======================
+// Həm public, həm də root qovluğundan servis et
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(__dirname));
 
 // TELEGRAM BOT AYARLARI
 const token = process.env.BOT_TOKEN;
@@ -162,7 +166,6 @@ if (bot) {
             lastActivePartnerId
         });
 
-        // adminChatId yoxlaması
         if (String(msg.chat.id) !== String(adminChatId)) {
             console.log("❌ Bu mesaj admin chat-dən deyil");
             return;
@@ -170,7 +173,6 @@ if (bot) {
 
         if (!msg.text) return;
 
-        // Əgər lastActivePartnerId yoxdursa, heç nə etmə
         if (!lastActivePartnerId) {
             console.log("❌ lastActivePartnerId boşdur. Əvvəlcə saytdan mesaj yazın.");
             return;
@@ -188,13 +190,24 @@ if (bot) {
 
         console.log("✅ Cavab sayta göndərildi → Partner:", lastActivePartnerId);
 
-        // Sayta real-time göndər
         io.emit('update-chat', {
             partnerId: lastActivePartnerId,
             msg: replyMsg
         });
     });
 }
+
+// ====================== 404 və HTML fallback (Render üçün vacib) ======================
+app.get('*', (req, res) => {
+    // Əgər .html ilə bitirsə, birbaşa həmin faylı göndərməyə çalış
+    if (req.path.endsWith('.html')) {
+        const filePath = path.join(__dirname, req.path);
+        if (fs.existsSync(filePath)) {
+            return res.sendFile(filePath);
+        }
+    }
+    res.status(404).send('Səhifə tapılmadı');
+});
 
 // ====================== SERVER START ======================
 const PORT = process.env.PORT || 3000;
