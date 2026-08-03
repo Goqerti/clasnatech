@@ -2,10 +2,19 @@ require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-const TelegramBot = require('node-telegram-bot-api');
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
+
+// TelegramBot-u düzgün yüklə
+let TelegramBot;
+try {
+    const telegramModule = require('node-telegram-bot-api');
+    TelegramBot = telegramModule.TelegramBot || telegramModule;
+} catch (err) {
+    console.error("❌ node-telegram-bot-api paketi yüklənə bilmədi:", err.message);
+    TelegramBot = null;
+}
 
 const app = express();
 const server = http.createServer(app);
@@ -19,13 +28,24 @@ app.use(express.static(path.join(__dirname, 'public')));
 const token = process.env.BOT_TOKEN;
 const adminChatId = process.env.ADMIN_CHAT_ID;
 
-let bot;
-if (token && token !== 'sizin_bot_tokeniniz_bura_yazilacaq') {
-    bot = new TelegramBot(token, { polling: false });
-    // DİQQƏT: Render üçün polling:false etdik ki, xəta verməsin. 
-    // Əgər lokal kompüterdəsinizsə və botun cavab verməsini istəyirsinizsə, polling: true edə bilərsiniz.
+let bot = null;
+
+if (token && token !== 'sizin_bot_tokeniniz_bura_yazilacaq' && typeof TelegramBot === 'function') {
+    try {
+        const isLocal = process.env.NODE_ENV !== 'production';
+        bot = new TelegramBot(token, { polling: isLocal });
+
+        if (isLocal) {
+            console.log("✅ Telegram bot polling rejimində aktivdir");
+        } else {
+            console.log("ℹ️ Production rejimindədir. Webhook istifadə edin.");
+        }
+    } catch (err) {
+        console.error("❌ Bot yaradıla bilmədi:", err.message);
+        bot = null;
+    }
 } else {
-    console.warn("⚠️ Telegram BOT_TOKEN tapılmadı.");
+    console.warn("⚠️ Telegram BOT_TOKEN tapılmadı və ya paket düzgün yüklənmədi.");
 }
 
 // --- MƏLUMAT BAZASI (db.json) ---
@@ -53,10 +73,10 @@ function writeDB(data) {
     fs.writeFileSync(dbPath, JSON.stringify(data, null, 2));
 }
 
-// API Endpoints
+// ====================== API Endpoints ======================
 app.get('/api/stats', (req, res) => res.json(readDB().stats));
 app.get('/api/expenses', (req, res) => res.json(readDB().expensesList || []));
-app.get('/api/chats', (req, res) => res.json(readDB().chatHistory)); // Yeni: Yazışmaları gətir
+app.get('/api/chats', (req, res) => res.json(readDB().chatHistory));
 
 // Xərc əlavə et
 app.post('/api/expense', (req, res) => {
@@ -64,13 +84,21 @@ app.post('/api/expense', (req, res) => {
     const db = readDB();
     if (!db.expensesList) db.expensesList = [];
 
-    let finalDate = new Date().toLocaleString('az-AZ'); 
-    if (date && !isNaN(new Date(date))) finalDate = new Date(date).toLocaleString('az-AZ');
+    let finalDate = new Date().toLocaleString('az-AZ');
+    if (date && !isNaN(new Date(date))) {
+        finalDate = new Date(date).toLocaleString('az-AZ');
+    }
 
-    const newExpense = { id: Date.now(), description, amount: parseFloat(amount), date: finalDate };
+    const newExpense = {
+        id: Date.now(),
+        description,
+        amount: parseFloat(amount),
+        date: finalDate
+    };
+
     db.expensesList.push(newExpense);
     db.stats.totalExpenses += parseFloat(amount);
-    
+
     writeDB(db);
     res.json({ success: true, totalExpenses: db.stats.totalExpenses, newExpense });
 });
@@ -79,6 +107,7 @@ app.post('/api/expense', (req, res) => {
 app.delete('/api/expense/:id', (req, res) => {
     const db = readDB();
     const expenseToDelete = db.expensesList.find(exp => exp.id === parseInt(req.params.id));
+
     if (expenseToDelete) {
         db.stats.totalExpenses = Math.max(0, db.stats.totalExpenses - expenseToDelete.amount);
         db.expensesList = db.expensesList.filter(exp => exp.id !== parseInt(req.params.id));
@@ -89,47 +118,86 @@ app.delete('/api/expense/:id', (req, res) => {
     }
 });
 
-// Qlobal dəyişən: Adminin kimə cavab verəcəyini bilmək üçün ən son yazan partnyoru yadda saxlayır
+// ====================== WEBSOCKET + TELEGRAM ======================
 let lastActivePartnerId = null;
 
-// WEBSOCKET: Canlı Yazışma İdarəetməsi
 io.on('connection', (socket) => {
     socket.on('send-message', (data) => {
-        lastActivePartnerId = data.partnerId; // Ən sonuncu partnyoru qeyd et
-        
+        if (!data.partnerId || !data.text) return;
+
+        lastActivePartnerId = String(data.partnerId);
+
         const db = readDB();
-        if(!db.chatHistory[data.partnerId]) db.chatHistory[data.partnerId] = [];
-        
+        if (!db.chatHistory[data.partnerId]) {
+            db.chatHistory[data.partnerId] = [];
+        }
+
         const newMsg = { type: 'sent', text: data.text };
         db.chatHistory[data.partnerId].push(newMsg);
         writeDB(db);
 
-        // Mesajı saytdakı *digər bütün ziyarətçilərə* canlı göndər
-        socket.broadcast.emit('update-chat', { partnerId: data.partnerId, msg: newMsg });
+        // Digər istifadəçilərə göndər
+        socket.broadcast.emit('update-chat', {
+            partnerId: data.partnerId,
+            msg: newMsg
+        });
 
         // Telegram-a göndər
         if (bot && adminChatId) {
-            bot.sendMessage(adminChatId, `👤 *Kiminlə:* ${data.partnerName}\n💬 *Mesaj:* ${data.text}`, { parse_mode: 'Markdown' })
-               .catch(err => console.error(err.message));
+            bot.sendMessage(
+                adminChatId,
+                `👤 *Kiminlə:* ${data.partnerName || 'Naməlum'}\n🆔 Partner ID: ${data.partnerId}\n💬 *Mesaj:* ${data.text}`,
+                { parse_mode: 'Markdown' }
+            ).catch(err => console.error("Telegram göndərmə xətası:", err.message));
         }
     });
 });
 
-// TELEGRAM: Telegram-dan sayta cavab gəldikdə
+// Telegram-dan gələn cavablar
 if (bot) {
     bot.on('message', (msg) => {
-        if (msg.chat.id.toString() === adminChatId && msg.text && lastActivePartnerId) {
-            const db = readDB();
-            const replyMsg = { type: 'received', text: msg.text };
-            
-            db.chatHistory[lastActivePartnerId].push(replyMsg);
-            writeDB(db);
+        console.log("📩 Telegram-dan mesaj gəldi:", {
+            chatId: msg.chat.id,
+            text: msg.text,
+            lastActivePartnerId
+        });
 
-            // Saytdakı *hər kəsə* canlı olaraq Adminin cavabını göstər
-            io.emit('update-chat', { partnerId: lastActivePartnerId, msg: replyMsg });
+        // adminChatId yoxlaması
+        if (String(msg.chat.id) !== String(adminChatId)) {
+            console.log("❌ Bu mesaj admin chat-dən deyil");
+            return;
         }
+
+        if (!msg.text) return;
+
+        // Əgər lastActivePartnerId yoxdursa, heç nə etmə
+        if (!lastActivePartnerId) {
+            console.log("❌ lastActivePartnerId boşdur. Əvvəlcə saytdan mesaj yazın.");
+            return;
+        }
+
+        const db = readDB();
+
+        if (!db.chatHistory[lastActivePartnerId]) {
+            db.chatHistory[lastActivePartnerId] = [];
+        }
+
+        const replyMsg = { type: 'received', text: msg.text };
+        db.chatHistory[lastActivePartnerId].push(replyMsg);
+        writeDB(db);
+
+        console.log("✅ Cavab sayta göndərildi → Partner:", lastActivePartnerId);
+
+        // Sayta real-time göndər
+        io.emit('update-chat', {
+            partnerId: lastActivePartnerId,
+            msg: replyMsg
+        });
     });
 }
 
+// ====================== SERVER START ======================
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`🚀 Server aktivdir: http://localhost:${PORT}`));
+server.listen(PORT, () => {
+    console.log(`🚀 Server aktivdir: http://localhost:${PORT}`);
+});
