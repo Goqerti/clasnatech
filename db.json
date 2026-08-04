@@ -1,7 +1,7 @@
 {
   "stats": {
-    "partners": 24,
-    "pendingOrders": 8,
+    "partners": 6,
+    "pendingOrders": 4,
     "totalExpenses": 38316
   },
   "expensesList": [
@@ -445,4 +445,4 @@
     ]
   }
 }
-```
+
